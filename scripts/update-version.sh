@@ -54,11 +54,7 @@ echo -e "Current version: ${YELLOW}${current_version}${NC}"
 if [[ -z "$target_version" ]]; then
     api_response=$(curl -s https://api.github.com/repos/anomalyco/opencode/releases/latest)
 
-    if command -v jq &>/dev/null; then
-        latest_tag=$(echo "$api_response" | jq -r '.tag_name // empty' | sed 's/^v//')
-    else
-        latest_tag=$(echo "$api_response" | grep -o '"tag_name": *"[^"]*"' | head -1 | sed 's/.*"v\([^"]*\)".*/\1/')
-    fi
+    latest_tag=$(echo "$api_response" | jq -r '.tag_name // empty' | sed 's/^v//')
 
     if [[ -z "$latest_tag" ]]; then
         echo -e "${RED}Failed to fetch latest version from GitHub${NC}"
@@ -106,12 +102,7 @@ for platform in "${!platforms[@]}"; do
         exit 1
     fi
 
-    if command -v jq &>/dev/null; then
-        hash=$(echo "$json" | jq -r '.hash')
-    else
-        hash=$(echo "$json" | grep -o '"hash":"[^"]*"' | sed 's/"hash":"\([^"]*\)"/\1/')
-    fi
-
+    hash=$(echo "$json" | jq -r '.hash')
     new_hashes["$platform"]="$hash"
     echo -e "${GREEN}${hash}${NC}"
 done
@@ -140,12 +131,7 @@ for platform in "${!desktop_platforms[@]}"; do
         exit 1
     fi
 
-    if command -v jq &>/dev/null; then
-        hash=$(echo "$json" | jq -r '.hash')
-    else
-        hash=$(echo "$json" | grep -o '"hash":"[^"]*"' | sed 's/"hash":"\([^"]*\)"/\1/')
-    fi
-
+    hash=$(echo "$json" | jq -r '.hash')
     new_desktop_hashes["$platform"]="$hash"
     echo -e "${GREEN}${hash}${NC}"
 done
