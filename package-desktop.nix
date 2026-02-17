@@ -8,17 +8,17 @@
 , zlib
 , openssl
 , icu
-, gtk3
-, gdk-pixbuf
-, cairo
-, glib
-, webkitgtk_4_1
-, libsoup_3
+, gtk3 ? null
+, gdk-pixbuf ? null
+, cairo ? null
+, glib ? null
+, webkitgtk_4_1 ? null
+, libsoup_3 ? null
 , binName ? "opencode-desktop"
 }:
 
 let
-  version = "1.2.5";
+  version = "1.2.6";
 
   platformMap = {
     "x86_64-linux" = { target = "linux-amd64"; ext = "deb"; };
@@ -31,16 +31,29 @@ let
     (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "linux-amd64" = "sha256-9z0LTUg8q3DNuwunW6w4kjAwQ51IGV3aPOfQb3Atx7E=";
-    "linux-arm64" = "sha256-TigtapOo/0gckcVupHoDbfq3XH/7xiQXiYjXy3WtI7k=";
-    "darwin-x64" = "sha256-snROJWYI2KK/8k/vPLdgV5QUstXWE/ER9wK/FProvGs=";
-    "darwin-aarch64" = "sha256-aX8YNLpPUShYlqI/o+Yx2AZUzlIuBf5sGokKJWIpE8M=";
+    "linux-amd64" = "sha256-AYCgmSCR2Qmnuows6IYS4rmut6RISS4c1fGArV/I4lw=";
+    "linux-arm64" = "sha256-q5YYM3oho+tXgBrbBvssttBlIpfKN5Nx6AyT0Homsq0=";
+    "darwin-x64" = "sha256-thf+djaMRfo30trZq37OTu7W4AWOprh27+q+3lrAMfs=";
+    "darwin-aarch64" = "sha256-ch91mdUJDOxdJ2/7exfrA1bxFffu1DukjA2PqsMJl54=";
   };
 
   src = fetchurl {
     url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-${platformInfo.target}.${platformInfo.ext}";
     sha256 = hashes.${platformInfo.target};
   };
+
+  linuxLibs = [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+    icu
+    gtk3
+    gdk-pixbuf
+    cairo
+    glib
+    webkitgtk_4_1
+    libsoup_3
+  ];
 in
 stdenv.mkDerivation {
   pname = "opencode-desktop";
@@ -52,18 +65,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ makeBinaryWrapper unzip ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook binutils ];
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    zlib
-    openssl
-    icu
-    stdenv.cc.cc.lib
-    gtk3
-    gdk-pixbuf
-    cairo
-    glib
-    webkitgtk_4_1
-    libsoup_3
-  ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux linuxLibs;
 
 
 
@@ -93,20 +95,8 @@ stdenv.mkDerivation {
     fi
 
     makeBinaryWrapper "$out/bin/.OpenCode-unwrapped" "$out/bin/${binName}" \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
-        stdenv.cc.cc.lib
-        zlib
-        openssl
-        icu
-        gtk3
-        gdk-pixbuf
-        cairo
-        glib
-        webkitgtk_4_1
-        libsoup_3
-      ]}" \
-      --set GDK_BACKEND wayland,x11 \
-      --set WEBKIT_DISABLE_COMPOSITING_MODE 1
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''} \
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''--set OC_ALLOW_WAYLAND 1''}
 
     runHook postInstall
   '';
