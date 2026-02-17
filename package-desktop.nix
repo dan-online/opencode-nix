@@ -14,6 +14,7 @@
 , glib ? null
 , webkitgtk_4_1 ? null
 , libsoup_3 ? null
+, gst_all_1 ? null
 , binName ? "opencode-desktop"
 }:
 
@@ -56,6 +57,9 @@ let
     glib
     webkitgtk_4_1
     libsoup_3
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
   ];
 in
 stdenv.mkDerivation {
@@ -104,6 +108,7 @@ stdenv.mkDerivation {
     makeBinaryWrapper "$out/bin/.OpenCode-unwrapped" "$out/bin/${binName}" \
       ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''} \
       ${lib.optionalString stdenv.hostPlatform.isLinux ''--set OC_ALLOW_WAYLAND 1''} \
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix GST_PLUGIN_PATH : "${lib.makeSearchPath "lib/gstreamer-1.0" [gst_all_1.gstreamer gst_all_1.gst-plugins-base gst_all_1.gst-plugins-good]}"''} \
       --set SHELL "$out/bin/.shell-wrapper"
 
     runHook postInstall
