@@ -18,9 +18,11 @@ OpenCode is distributed as a pre-built binary via GitHub releases and npm. While
 ```bash
 # Try it without installing
 nix run github:dan-online/opencode-nix
+nix run github:dan-online/opencode-nix#opencode-desktop
 
 # Install to your profile
 nix profile install github:dan-online/opencode-nix
+nix profile install github:dan-online/opencode-nix#opencode-desktop
 
 # Update later
 nix profile upgrade '.*opencode.*'
@@ -108,12 +110,23 @@ pkgs.mkShell {
 
 ## Supported Platforms
 
+CLI package (`opencode`):
+
 | Platform | Architecture | Archive |
 |----------|-------------|---------|
 | Linux | x86_64 | `.tar.gz` |
 | Linux | aarch64 | `.tar.gz` |
 | macOS | x86_64 (Intel) | `.zip` |
 | macOS | aarch64 (Apple Silicon) | `.zip` |
+
+Desktop package (`opencode-desktop`):
+
+| Platform | Architecture | Archive |
+|----------|-------------|---------|
+| Linux | x86_64 | `.deb` |
+| Linux | aarch64 | `.deb` |
+| macOS | x86_64 (Intel) | `.app.tar.gz` |
+| macOS | aarch64 (Apple Silicon) | `.app.tar.gz` |
 
 ## How Updates Work
 

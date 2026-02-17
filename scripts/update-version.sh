@@ -10,6 +10,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 PACKAGE_NIX="$REPO_DIR/package.nix"
+DESKTOP_PACKAGE_NIX="$REPO_DIR/package-desktop.nix"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -109,17 +110,50 @@ for platform in "${!platforms[@]}"; do
     echo -e "${GREEN}${hash}${NC}"
 done
 
+# Desktop platforms to fetch
+declare -A desktop_platforms
+desktop_platforms=(
+    ["linux-amd64"]="deb"
+    ["linux-arm64"]="deb"
+    ["darwin-x64"]="app.tar.gz"
+    ["darwin-aarch64"]="app.tar.gz"
+)
+
+declare -A new_desktop_hashes
+
+for platform in "${!desktop_platforms[@]}"; do
+    ext="${desktop_platforms[$platform]}"
+    url="https://github.com/anomalyco/opencode/releases/download/v${target_version}/opencode-desktop-${platform}.${ext}"
+    echo -n "  Fetching desktop ${platform}... "
+
+    hash=$(nix-prefetch-url "$url" 2>/dev/null)
+    if [[ -z "$hash" ]]; then
+        echo -e "${RED}FAILED${NC}"
+        echo -e "${RED}Could not fetch desktop hash for ${platform}. Release may not exist.${NC}"
+        exit 1
+    fi
+
+    new_desktop_hashes["$platform"]="$hash"
+    echo -e "${GREEN}${hash}${NC}"
+done
+
 echo ""
 echo "Updating package.nix..."
 
 # Update version
 sed -i "s/version = \"${current_version}\"/version = \"${target_version}\"/" "$PACKAGE_NIX"
+sed -i "s/version = \"${current_version}\"/version = \"${target_version}\"/" "$DESKTOP_PACKAGE_NIX"
 
 # Update hashes
 for platform in "${!new_hashes[@]}"; do
     hash="${new_hashes[$platform]}"
     # Match the hash line for this platform and replace just the hash value
     sed -i "s|\"${platform}\"[[:space:]]*= \"[^\"]*\"|\"${platform}\" = \"${hash}\"|" "$PACKAGE_NIX"
+done
+
+for platform in "${!new_desktop_hashes[@]}"; do
+    hash="${new_desktop_hashes[$platform]}"
+    sed -i "s|\"${platform}\"[[:space:]]*= \"[^\"]*\"|\"${platform}\" = \"${hash}\"|" "$DESKTOP_PACKAGE_NIX"
 done
 
 # Verify the update

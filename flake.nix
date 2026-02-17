@@ -10,6 +10,7 @@
     let
       overlay = final: prev: {
         opencode = final.callPackage ./package.nix { };
+        opencode-desktop = final.callPackage ./package-desktop.nix { };
       };
     in
     flake-utils.lib.eachDefaultSystem (system:
@@ -23,6 +24,7 @@
         packages = {
           default = pkgs.opencode;
           opencode = pkgs.opencode;
+          opencode-desktop = pkgs.opencode-desktop;
         };
 
         apps = {
@@ -33,6 +35,10 @@
           opencode = {
             type = "app";
             program = "${pkgs.opencode}/bin/opencode";
+          };
+          opencode-desktop = {
+            type = "app";
+            program = "${pkgs.opencode-desktop}/bin/opencode-desktop";
           };
         };
 
