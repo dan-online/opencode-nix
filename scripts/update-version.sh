@@ -99,11 +99,17 @@ for platform in "${!platforms[@]}"; do
     url="https://github.com/anomalyco/opencode/releases/download/v${target_version}/opencode-${platform}.${ext}"
     echo -n "  Fetching ${platform}... "
 
-    hash=$(nix-prefetch-url "$url" 2>/dev/null)
-    if [[ -z "$hash" ]]; then
+    json=$(nix store prefetch-file --json "$url" 2>/dev/null)
+    if [[ -z "$json" ]]; then
         echo -e "${RED}FAILED${NC}"
         echo -e "${RED}Could not fetch hash for ${platform}. Release may not exist.${NC}"
         exit 1
+    fi
+
+    if command -v jq &>/dev/null; then
+        hash=$(echo "$json" | jq -r '.hash')
+    else
+        hash=$(echo "$json" | grep -o '"hash":"[^"]*"' | sed 's/"hash":"\([^"]*\)"/\1/')
     fi
 
     new_hashes["$platform"]="$hash"
