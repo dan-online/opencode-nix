@@ -33,10 +33,10 @@ let
 
   # Per-platform hashes (nix-prefetch-url, no --unpack)
   hashes = {
-    "linux-x64" = "06p6pdmd5lf0dq6kib62h5d0n335a10a3kljglhhg2wy3jfx968j";
-    "linux-arm64" = "10rxfdi19fin6i398qxcphqjfx02ag54vfbkkdak0kqiva6plbx0";
-    "darwin-x64" = "0ihjdm9qdmdr3531wc72fnx1nh5sy0ccmplb2adfvlh53wjh4y1g";
-    "darwin-arm64" = "1zxw2x2lr1maz4qqffyqwgvl49zckcf5w66j5hxxzz3v72j6n8av";
+    "linux-x64" = "sha256-EpnUnRyeiwchfZLOoUBQZQwLWoHCrDgNbsDR0mq75ho=";
+    "linux-arm64" = "sha256-oC96jdoRTzBVm3O5TcpTAnQnMbysY5RGNDa6FGJzPYM=";
+    "darwin-x64" = "sha256-L3gCJR8F0u2aEoveyhjwukAbunXiMB5GGbnVhlNtEkY=";
+    "darwin-arm64" = "sha256-WyFrpDh7/N87LNIYXhyb7CdC9+PYO4cx+aqGTEUXvP8=";
   };
 
   src = fetchurl {
