@@ -14,6 +14,7 @@
 , glib ? null
 , webkitgtk_4_1 ? null
 , libsoup_3 ? null
+, opencode
 , binName ? "opencode-desktop"
 }:
 
@@ -67,8 +68,6 @@ stdenv.mkDerivation {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux linuxLibs;
 
-
-
   installPhase = ''
     runHook preInstall
 
@@ -94,13 +93,9 @@ stdenv.mkDerivation {
       install -Dm755 OpenCode.app/Contents/MacOS/opencode-cli "$out/bin/.opencode-cli-unwrapped"
     fi
 
-    # Wrap the CLI with LD_LIBRARY_PATH
+    # Wrap the bundled opencode-cli with LD_LIBRARY_PATH
     makeBinaryWrapper "$out/bin/.opencode-cli-unwrapped" "$out/bin/opencode-cli" \
       ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''}
-
-    # Create sidecars directory - copy the wrapped CLI
-    mkdir -p "$out/bin/sidecars"
-    cp "$out/bin/opencode-cli" "$out/bin/sidecars/opencode-cli"
 
     makeBinaryWrapper "$out/bin/.OpenCode-unwrapped" "$out/bin/${binName}" \
       ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''} \
