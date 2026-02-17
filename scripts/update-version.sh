@@ -126,11 +126,18 @@ for platform in "${!desktop_platforms[@]}"; do
     url="https://github.com/anomalyco/opencode/releases/download/v${target_version}/opencode-desktop-${platform}.${ext}"
     echo -n "  Fetching desktop ${platform}... "
 
-    hash=$(nix-prefetch-url "$url" 2>/dev/null)
-    if [[ -z "$hash" ]]; then
+    # Use nix store prefetch-file for SRI hash format
+    json=$(nix store prefetch-file --json "$url" 2>/dev/null)
+    if [[ -z "$json" ]]; then
         echo -e "${RED}FAILED${NC}"
         echo -e "${RED}Could not fetch desktop hash for ${platform}. Release may not exist.${NC}"
         exit 1
+    fi
+
+    if command -v jq &>/dev/null; then
+        hash=$(echo "$json" | jq -r '.hash')
+    else
+        hash=$(echo "$json" | grep -o '"hash":"[^"]*"' | sed 's/"hash":"\([^"]*\)"/\1/')
     fi
 
     new_desktop_hashes["$platform"]="$hash"
