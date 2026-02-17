@@ -14,7 +14,6 @@
 , glib ? null
 , webkitgtk_4_1 ? null
 , libsoup_3 ? null
-, opencode
 , binName ? "opencode-desktop"
 }:
 
@@ -93,19 +92,52 @@ stdenv.mkDerivation {
       install -Dm755 OpenCode.app/Contents/MacOS/opencode-cli "$out/bin/.opencode-cli-unwrapped"
     fi
 
-    # Wrap the bundled opencode-cli with LD_LIBRARY_PATH
-    makeBinaryWrapper "$out/bin/.opencode-cli-unwrapped" "$out/bin/opencode-cli" \
-      ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''}
+    # Copy the bundled opencode-cli directly (autoPatchelf fixes rpath on Linux)
+    cp "$out/bin/.opencode-cli-unwrapped" "$out/bin/opencode-cli"
+
+    # Shell wrapper to work around Tauri sidecar spawning behavior.
+    #
+    # opencode-desktop spawns the CLI sidecar via: $SHELL -il -c "opencode-cli serve ..."
+    # The -il flags create an interactive login shell, which causes issues on NixOS
+    # with zsh (the shell waits for input, stopping the sidecar process).
+    #
+    # This wrapper strips the -il flags while preserving the -c command execution.
+    # See: https://github.com/anomalyco/opencode/blob/dev/packages/desktop/src-tauri/src/cli.rs
+    cat > "$out/bin/.shell-wrapper" << 'EOF'
+#!/bin/sh
+# Tauri sidecar shell wrapper - strips interactive flags
+cmd=""
+found_c=false
+for arg in "$@"; do
+  case "$arg" in
+    -i|-l|-il|-li) continue ;;
+    -c) found_c=true ;;
+    *)
+      if $found_c; then
+        cmd="$arg"
+        break
+      fi
+      ;;
+  esac
+done
+if [ -n "$cmd" ]; then
+  exec /bin/sh -c "$cmd"
+else
+  exec /bin/sh "$@"
+fi
+EOF
+    chmod +x "$out/bin/.shell-wrapper"
 
     makeBinaryWrapper "$out/bin/.OpenCode-unwrapped" "$out/bin/${binName}" \
       ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''} \
-      ${lib.optionalString stdenv.hostPlatform.isLinux ''--set OC_ALLOW_WAYLAND 1''}
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''--set OC_ALLOW_WAYLAND 1''} \
+      --set SHELL "$out/bin/.shell-wrapper"
 
     runHook postInstall
   '';
 
   meta = with lib; {
-    description = "OpenCode Desktop package with CLI wrapper";
+    description = "OpenCode Desktop - AI coding assistant GUI";
     homepage = "https://opencode.ai";
     license = licenses.mit;
     platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
