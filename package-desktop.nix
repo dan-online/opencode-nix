@@ -82,7 +82,7 @@ stdenv.mkDerivation {
       tar -xzf data.tar.gz
 
       install -Dm755 usr/bin/OpenCode "$out/bin/.OpenCode-unwrapped"
-      install -Dm755 usr/bin/opencode-cli "$out/bin/opencode-cli"
+      install -Dm755 usr/bin/opencode-cli "$out/bin/.opencode-cli-unwrapped"
       cp -R usr/share "$out/share"
     else
       tar -xzf "$src"
@@ -91,10 +91,14 @@ stdenv.mkDerivation {
       cp -R OpenCode.app "$out/Applications/"
 
       install -Dm755 OpenCode.app/Contents/MacOS/OpenCode "$out/bin/.OpenCode-unwrapped"
-      install -Dm755 OpenCode.app/Contents/MacOS/opencode-cli "$out/bin/opencode-cli"
+      install -Dm755 OpenCode.app/Contents/MacOS/opencode-cli "$out/bin/.opencode-cli-unwrapped"
     fi
 
-    # Create sidecars directory - copy instead of symlink for nix store compatibility
+    # Wrap the CLI with LD_LIBRARY_PATH
+    makeBinaryWrapper "$out/bin/.opencode-cli-unwrapped" "$out/bin/opencode-cli" \
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath linuxLibs}"''}
+
+    # Create sidecars directory - copy the wrapped CLI
     mkdir -p "$out/bin/sidecars"
     cp "$out/bin/opencode-cli" "$out/bin/sidecars/opencode-cli"
 
