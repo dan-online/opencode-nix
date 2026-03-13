@@ -18,7 +18,7 @@
 }:
 
 let
-  version = "1.2.24";
+  version = "1.2.25";
 
   # Platform mapping: Nix system -> OpenCode release target
   platformMap = {
@@ -33,10 +33,10 @@ let
 
   # Per-platform hashes (nix-prefetch-url, no --unpack)
   hashes = {
-    "linux-x64" = "sha256-IGRO9rhZdfC0nD6hMcjUnN7oVEGbO4z7JEduAXh6hx4=";
-    "linux-arm64" = "sha256-WFB7mMKQL9gZudJjlZTuxPNuVwjxFLoCixw+h3u15H0=";
-    "darwin-x64" = "sha256-TeRmLSCog02Pk+RZZf9fq/vA9p8V60uzPwdC7O1U4gM=";
-    "darwin-arm64" = "sha256-hYRnFVlDwQMIFQR8vaL9UHTRupMJoA5d1FhaGbPEiW4=";
+    "linux-x64" = "sha256-yrJ7rFrl83BiY+VzyBXNck6vrVTvlkhn2zYngYHmRhE=";
+    "linux-arm64" = "sha256-dAhlz0cryrR9Lk038OCr5LN1VzGHSDkSj+eI6ZOVoKg=";
+    "darwin-x64" = "sha256-EbyR3RKk3k/WFivrnPo3Bx1C0KIQB/WDvwne3XLdV84=";
+    "darwin-arm64" = "sha256-GdK8Km1gxCrX2uyPBCzLwKOYdwnnPcWssc/NjefIC4Y=";
   };
 
   src = fetchurl {
