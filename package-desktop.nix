@@ -19,7 +19,7 @@
 }:
 
 let
-  version = "1.3.15";
+  version = "1.3.16";
 
   # Shell wrapper to work around Tauri sidecar spawning (see script for details)
   shellWrapper = ./scripts/tauri-shell-wrapper.sh;
@@ -35,10 +35,10 @@ let
     (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "linux-amd64" = "sha256-JfmcYuiV9Z1E6pQn4hoPGic9KW6l0X51dme102GpV/8=";
-    "linux-arm64" = "sha256-airi73p/nCz+TgMmTYKNzCvVxZJXCDKxp+ot7YHJyns=";
-    "darwin-x64" = "sha256-jtpjAQv0Bj3lDsfuCmAwC+mgEPU2kHqGwOxLTvfohUE=";
-    "darwin-aarch64" = "sha256-r+mSqYarcy0K54zJiJxJ9LofXygRYJE4NhO+zt2pUWI=";
+    "linux-amd64" = "sha256-/6ZNxCb0G1TXlf6Q1b7+EmLbUvwpVG4VuMnjTuXtvkQ=";
+    "linux-arm64" = "sha256-dXjICcoWcBmP1PJNyK/p5oicDEvfllD3tqu5u3gwVDo=";
+    "darwin-x64" = "sha256-+qe3AoHy3E8tnx4NPja06lt87zvb1Rv880B1DmU8Jcc=";
+    "darwin-aarch64" = "sha256-abaMUfgwMfFxwcMtgGvUqakbamY0UhEZprXHRVESzAs=";
   };
 
   src = fetchurl {
